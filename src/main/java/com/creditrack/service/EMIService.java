@@ -3,9 +3,12 @@ package com.creditrack.service;
 import com.creditrack.model.EMI;
 import com.creditrack.model.EMIStatus;
 import com.creditrack.model.Loan;
+import com.creditrack.model.LoanStatus;
 import com.creditrack.repository.EMIRepository;
+import com.creditrack.repository.LoanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -19,6 +22,7 @@ import java.util.List;
 public class EMIService {
 
     private final EMIRepository emiRepository;
+    private final LoanRepository loanRepository;
 
     public void generateEMIs(Loan loan) {
         BigDecimal principal = loan.getAmount();
@@ -50,6 +54,7 @@ public class EMIService {
         emiRepository.saveAll(emis);
     }
 
+    @Transactional
     public EMI payEMI(Long emiId) {
         EMI emi = emiRepository.findById(emiId)
                 .orElseThrow(() -> new RuntimeException("EMI not found"));
@@ -60,7 +65,20 @@ public class EMIService {
 
         emi.setStatus(EMIStatus.PAID);
         emi.setPaymentDate(LocalDateTime.now());
-        return emiRepository.save(emi);
+        EMI savedEmi = emiRepository.save(emi);
+
+        // Check if all EMIs for this loan are now PAID
+        Loan loan = emi.getLoan();
+        if (loan != null) {
+            List<EMI> loanEmis = emiRepository.findByLoanId(loan.getId());
+            boolean allPaid = loanEmis.stream().allMatch(e -> e.getStatus() == EMIStatus.PAID);
+            if (allPaid) {
+                loan.setStatus(LoanStatus.CLOSED);
+                loanRepository.save(loan);
+            }
+        }
+
+        return savedEmi;
     }
 
     public List<EMI> getEMIsByLoan(Long loanId) {

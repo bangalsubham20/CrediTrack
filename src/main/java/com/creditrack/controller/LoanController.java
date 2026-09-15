@@ -45,18 +45,24 @@ public class LoanController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Loan> getLoanById(@PathVariable Long id) {
-        return ResponseEntity.ok(loanService.getLoanById(id));
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Loan> getLoanById(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        Loan loan = loanService.getLoanById(id);
+        boolean isStaff = user.getRole() == com.creditrack.model.Role.ADMIN || user.getRole() == com.creditrack.model.Role.LOAN_OFFICER;
+        if (!isStaff && !loan.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Access denied to loan #" + id);
+        }
+        return ResponseEntity.ok(loan);
     }
 
     @PutMapping("/{id}/approve")
-    @PreAuthorize("hasRole('LOAN_OFFICER')")
+    @PreAuthorize("hasRole('LOAN_OFFICER') or hasRole('ADMIN')")
     public ResponseEntity<Loan> approveLoan(@PathVariable Long id) {
         return ResponseEntity.ok(loanService.approveLoan(id));
     }
 
     @PutMapping("/{id}/reject")
-    @PreAuthorize("hasRole('LOAN_OFFICER')")
+    @PreAuthorize("hasRole('LOAN_OFFICER') or hasRole('ADMIN')")
     public ResponseEntity<Loan> rejectLoan(@PathVariable Long id) {
         return ResponseEntity.ok(loanService.rejectLoan(id));
     }

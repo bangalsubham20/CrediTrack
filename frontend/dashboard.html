@@ -10,67 +10,181 @@
 </head>
 
 <body>
+    <div id="toast-container"></div>
+
+    <!-- Header Navigation -->
     <header class="dashboard-header">
-        <h1>CrediTrack</h1>
-        <div class="utility-nav">
+        <div class="brand-logo" style="margin-bottom:0; font-size: 1.5rem;">💳 CrediTrack</div>
+        <div class="user-badge">
+            <span id="roleBadge" class="role-pill role-CUSTOMER">CUSTOMER</span>
             <span>Welcome, <b id="userName">User</b></span>
-            <button class="btn" id="logoutBtn" style="width: auto; padding: 0.5rem 1rem;">Logout</button>
+            <button class="btn btn-secondary btn-sm" id="logoutBtn">Logout</button>
         </div>
     </header>
 
     <div class="container">
-        <div class="dashboard-actions" style="margin-bottom: 2rem;">
-            <button class="btn" id="applyLoanBtn" style="width: auto;">+ Apply for New Loan</button>
+        <!-- KPI Metrics Grid -->
+        <div class="metrics-grid" id="metricsGrid">
+            <div class="metric-card">
+                <span class="metric-title" id="metric1Title">Active Loans</span>
+                <span class="metric-value" id="metric1Value">0</span>
+            </div>
+            <div class="metric-card">
+                <span class="metric-title" id="metric2Title">Total Principal</span>
+                <span class="metric-value" id="metric2Value">₹0</span>
+            </div>
+            <div class="metric-card">
+                <span class="metric-title" id="metric3Title">Pending Actions</span>
+                <span class="metric-value" id="metric3Value">0</span>
+            </div>
         </div>
 
-        <h2>My Loans</h2>
-        <div id="loanContainer" class="card-grid">
-            <!-- Loans will be injected here -->
-            <p>Loading...</p>
+        <!-- CUSTOMER VIEW: Interactive EMI Calculator & Quick Apply -->
+        <div id="customerSection">
+            <div class="calc-card">
+                <div class="calc-header">
+                    <div>
+                        <h2>⚡ Loan EMI Calculator & Instant Apply</h2>
+                        <p style="color:var(--text-muted);font-size:0.9rem;">Estimate your monthly payments before applying</p>
+                    </div>
+                    <button class="btn" id="openApplyModalBtn" style="width: auto;">+ Apply with Custom Values</button>
+                </div>
+
+                <div class="calc-grid">
+                    <div>
+                        <!-- Amount Slider -->
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>Loan Amount:</span>
+                                <span class="slider-val" id="calcAmountLabel">₹50,000</span>
+                            </div>
+                            <input type="range" id="calcAmount" min="5000" max="1000000" step="5000" value="50000">
+                        </div>
+
+                        <!-- Interest Rate Slider -->
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>Annual Interest Rate:</span>
+                                <span class="slider-val" id="calcRateLabel">10.5%</span>
+                            </div>
+                            <input type="range" id="calcRate" min="5" max="30" step="0.5" value="10.5">
+                        </div>
+
+                        <!-- Tenure Slider -->
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>Tenure (Months):</span>
+                                <span class="slider-val" id="calcTenureLabel">12 Months</span>
+                            </div>
+                            <input type="range" id="calcTenure" min="3" max="60" step="1" value="12">
+                        </div>
+                    </div>
+
+                    <div class="calc-result-box">
+                        <div class="calc-emi-highlight">
+                            <div style="color:var(--text-muted);font-size:0.85rem;text-transform:uppercase;">Estimated Monthly EMI</div>
+                            <div class="calc-emi-amount" id="calcEmiValue">₹4,408</div>
+                        </div>
+                        <div>
+                            <div class="calc-summary-row">
+                                <span style="color:var(--text-muted);">Total Interest:</span>
+                                <b id="calcTotalInterest">₹2,896</b>
+                            </div>
+                            <div class="calc-summary-row" style="border-bottom:none;">
+                                <span style="color:var(--text-muted);">Total Amount Payable:</span>
+                                <b id="calcTotalPayable" style="color:var(--secondary);">₹52,896</b>
+                            </div>
+                        </div>
+                        <button class="btn btn-success" id="applyFromCalcBtn" style="margin-top:1rem;">Apply for this Loan Now</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Loans Grid -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h2>My Loans & Applications</h2>
+            </div>
+            <div id="loanContainer" class="card-grid">
+                <p style="color:var(--text-muted);">Loading loans...</p>
+            </div>
+        </div>
+
+        <!-- OFFICER / ADMIN VIEW: Review & Approvals -->
+        <div id="officerSection" style="display: none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                <div>
+                    <h2>Loan Applications Management</h2>
+                    <p style="color:var(--text-muted);font-size:0.9rem;">Review, approve, or reject loan applications across the platform</p>
+                </div>
+                <button class="btn btn-secondary btn-sm" id="refreshLoansBtn" style="width:auto;">↻ Refresh List</button>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Loan #</th>
+                            <th>Applicant</th>
+                            <th>Amount</th>
+                            <th>Rate / Tenure</th>
+                            <th>Applied Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminLoanTableBody">
+                        <tr><td colspan="7" style="text-align:center;color:var(--text-muted);">Loading loan applications...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <!-- Apply Loan Modal -->
     <div class="modal" id="loanModal">
         <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h2>Apply for Loan</h2>
+            <button class="close-btn" id="closeLoanModalBtn">&times;</button>
+            <h2 style="margin-bottom:1rem;">Apply for New Loan</h2>
             <form id="loanForm">
                 <div class="form-group">
-                    <label>Amount (₹)</label>
+                    <label for="amount">Loan Amount (₹)</label>
                     <input type="number" id="amount" min="1000" placeholder="e.g. 50000" required>
                 </div>
                 <div class="form-group">
-                    <label>Interest Rate (%)</label>
+                    <label for="rate">Interest Rate (% per annum)</label>
                     <input type="number" id="rate" step="0.1" placeholder="e.g. 10.5" required>
                 </div>
                 <div class="form-group">
-                    <label>Tenure (Months)</label>
-                    <input type="number" id="tenure" min="1" placeholder="e.g. 12" required>
+                    <label for="tenure">Tenure (Months)</label>
+                    <input type="number" id="tenure" min="1" max="120" placeholder="e.g. 12" required>
                 </div>
-                <button type="submit" class="btn">Submit Application</button>
+                <button type="submit" class="btn" id="submitLoanAppBtn">Submit Application</button>
             </form>
         </div>
     </div>
 
     <!-- View EMIs Modal -->
     <div class="modal" id="emiModal">
-        <div class="modal-content" style="max-width: 700px;">
-            <span class="close-btn">&times;</span>
-            <h2>EMI Schedule</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Due Date</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="emiTableBody">
-                    <!-- EMIs here -->
-                </tbody>
-            </table>
+        <div class="modal-content" style="max-width: 750px;">
+            <button class="close-btn" id="closeEmiModalBtn">&times;</button>
+            <h2 style="margin-bottom:0.5rem;" id="emiModalTitle">Repayment Schedule</h2>
+            <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:1.5rem;">Track installments and make repayments</p>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Due Date</th>
+                            <th>Installment</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="emiTableBody">
+                        <!-- EMIs will be rendered here -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

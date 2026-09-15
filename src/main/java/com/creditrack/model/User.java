@@ -1,5 +1,7 @@
 package com.creditrack.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -20,6 +22,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "users")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "authorities"})
 public class User implements UserDetails {
 
     @Id
@@ -32,6 +35,7 @@ public class User implements UserDetails {
     private String email;
 
     @NotBlank
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 

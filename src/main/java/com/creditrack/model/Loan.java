@@ -1,5 +1,6 @@
 package com.creditrack.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "loans")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Loan {
 
     @Id

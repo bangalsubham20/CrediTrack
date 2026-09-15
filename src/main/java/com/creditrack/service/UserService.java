@@ -27,11 +27,18 @@ public class UserService {
             throw new RuntimeException("Email already in use");
         }
 
+        Role assignedRole = request.getRole();
+        if (assignedRole == Role.ADMIN) {
+            assignedRole = Role.CUSTOMER; // Prevent privilege escalation through public registration
+        } else if (assignedRole == null) {
+            assignedRole = Role.CUSTOMER;
+        }
+
         var user = User.builder()
                 .fullName(request.getFullName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole() != null ? request.getRole() : Role.CUSTOMER)
+                .role(assignedRole)
                 .build();
 
         userRepository.save(user);
