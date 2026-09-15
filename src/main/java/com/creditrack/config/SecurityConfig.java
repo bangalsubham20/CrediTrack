@@ -24,7 +24,9 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/api/auth/**", "/error", "/favicon.ico").permitAll()
+                        .requestMatchers("/", "/index.html", "/dashboard.html", "/css/**", "/js/**", "/api/auth/**",
+                                "/api/health", "/error", "/favicon.ico")
+                        .permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
